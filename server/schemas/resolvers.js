@@ -37,6 +37,31 @@ const resolvers = {
       const user = await User.create(args);
       const token = signToken(user)
       return {token, user}
+    },
+    saveBook: async(_, args, context) => {
+      const {input} = args;
+      console.log("context.user", context.user);
+      if(context.user){
+        const user = await User.findByIdAndUpdate(
+          {_id: context.user._id},
+          {$push: {savedBooks: input }},
+          {new: true, runValidators: true}
+        )
+        return user;
+      }
+      throw new AuthenticationError('Please log in');
+    },
+    removeBook: async(_, args, context) => {
+      const {bookId} = args;
+      if(context.user){
+        const user = await User.findByIdAndUpdate(
+          {_id: context.user._id},
+          {$pull: {savedBooks: {bookId}}},
+          {new: true}
+        )
+        return user;
+      }
+      throw new AuthenticationError('Please log in');
     }
   }
 }
